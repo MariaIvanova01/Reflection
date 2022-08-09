@@ -1,22 +1,28 @@
 package reflection;
 
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Comparator;
 
 public class Main {
 
-    public static void main(String[] args) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-	    Class reflection = Reflection.class;
+    public static void main(String[] args) {
+        Class<Reflection> reflection = Reflection.class;
 
-        System.out.println(reflection);
-        Class superClass = reflection.getSuperclass();
-        System.out.println(superClass);
+        Method[] methods = reflection.getDeclaredMethods();
+        Method[] getters = Arrays.stream(methods)
+                .filter(method -> method.getName().startsWith("get"))
+                .sorted(Comparator.comparing(Method::getName))
+                .toArray(Method[]::new);
 
-        Class[] interfaces = reflection.getInterfaces();
-        Arrays.stream(interfaces).forEach(System.out::println);
+        Arrays.stream(getters)
+                .forEach(method -> System.out.printf("%s will return class %s%n", method.getName(), method.getReturnType().getName()));
 
-        Object reflectionObject = reflection.getDeclaredConstructor().newInstance();
-        System.out.println(reflectionObject);
+        Method[] setters = Arrays.stream(methods).filter(method -> method.getName().startsWith("set"))
+                .sorted(Comparator.comparing(Method::getName))
+                .toArray(Method[]::new);
 
+        Arrays.stream(setters)
+                .forEach(method -> System.out.printf("%s and will set field of class %s%n", method.getName(), method.getParameterTypes()[0].getName()));
     }
 }
